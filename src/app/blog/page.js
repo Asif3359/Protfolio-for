@@ -3,6 +3,17 @@ import Link from "next/link";
 import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
 
+async function getData() {
+    try {
+        await connectDB();
+        const user = await User.findOne({});
+        return { user: JSON.parse(JSON.stringify(user)) };
+    } catch (error) {
+        console.error('Error fetching data:', error);
+        return { user: null };
+    }
+}
+
 async function getBlogPosts() {
     try {
         await connectDB();
@@ -36,9 +47,10 @@ async function getBlogPosts() {
 
 export default async function BlogPage() {
     const blogPosts = await getBlogPosts();
-
+    const { user } = await getData();
     return (
         <div className="min-h-screen pt-20 px-8">
+            <Navigation userData={user}></Navigation>
             <div className="max-w-4xl mx-auto mt-5">
                 <h1 className="text-3xl font-bold mb-8">Blog</h1>
                 {blogPosts.length === 0 ? (

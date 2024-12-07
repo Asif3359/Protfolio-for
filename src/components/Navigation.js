@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 
-export default function Navigation() {
+export default function Navigation( { userData } ) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const pathname = usePathname();
 
@@ -40,7 +40,7 @@ export default function Navigation() {
                                 ))}
                             </ul>
                         </div>
-                        <Link href="/" className="btn btn-ghost normal-case text-xl">Your Name</Link>
+                        <Link href="/" className="btn btn-ghost normal-case text-xl">{userData?.name || 'Your Name'}</Link>
                     </div>
                     <div className="hidden lg:flex">
                         <ul className="menu menu-horizontal px-1">

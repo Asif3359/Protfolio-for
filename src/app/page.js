@@ -48,6 +48,7 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Navigation userData={user}></Navigation>
       <HeroSection userData={user} />
 
       {/* About Me Section */}

@@ -85,45 +85,47 @@ export default function SkillsPage() {
 
     if (loading) {
         return (
-            <div className="flex justify-center items-center min-h-[60vh]">
+            <div className="flex justify-center items-center min-h-[calc(100vh-4rem)]">
                 <span className="loading loading-spinner loading-lg"></span>
             </div>
         );
     }
 
     return (
-        <div className="max-w-4xl mx-auto">
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold">Skills Management</h1>
+        <div className="w-full">
+            <div className="mb-6">
+                <h1 className="text-2xl sm:text-3xl font-bold mb-2">Skills Management</h1>
+                <p className="text-base-content/60">Add and manage your professional skills.</p>
             </div>
 
             {/* Add New Skill Form */}
             <div className="card bg-base-100 shadow-xl mb-6">
-                <div className="card-body">
-                    <h2 className="card-title mb-4">Add New Skill</h2>
-                    <form onSubmit={handleAddSkill} className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="card-body p-4 sm:p-6">
+                    <h2 className="text-lg sm:text-xl font-bold mb-4">Add New Skill</h2>
+                    <form onSubmit={handleAddSkill} className="space-y-4 sm:space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                             <div className="form-control">
                                 <label className="label">
-                                    <span className="label-text">Skill Name</span>
+                                    <span className="label-text font-medium">Skill Name</span>
                                 </label>
                                 <input
                                     type="text"
                                     value={newSkill.name}
                                     onChange={(e) => setNewSkill({ ...newSkill, name: e.target.value })}
-                                    className="input input-bordered"
+                                    className="input input-bordered input-sm sm:input-md"
                                     required
+                                    placeholder="e.g., React.js"
                                 />
                             </div>
 
                             <div className="form-control">
                                 <label className="label">
-                                    <span className="label-text">Category</span>
+                                    <span className="label-text font-medium">Category</span>
                                 </label>
                                 <select
                                     value={newSkill.category}
                                     onChange={(e) => setNewSkill({ ...newSkill, category: e.target.value })}
-                                    className="select select-bordered"
+                                    className="select select-bordered select-sm sm:select-md"
                                     required
                                 >
                                     <option value="Frontend">Frontend</option>
@@ -136,7 +138,7 @@ export default function SkillsPage() {
 
                             <div className="form-control">
                                 <label className="label">
-                                    <span className="label-text">Proficiency (%)</span>
+                                    <span className="label-text font-medium">Proficiency (%)</span>
                                 </label>
                                 <input
                                     type="number"
@@ -144,7 +146,7 @@ export default function SkillsPage() {
                                     max="100"
                                     value={newSkill.proficiency}
                                     onChange={(e) => setNewSkill({ ...newSkill, proficiency: parseInt(e.target.value) })}
-                                    className="input input-bordered"
+                                    className="input input-bordered input-sm sm:input-md"
                                     required
                                 />
                             </div>
@@ -153,7 +155,7 @@ export default function SkillsPage() {
                         <div className="card-actions justify-end">
                             <button
                                 type="submit"
-                                className={`btn btn-primary ${saving ? 'loading' : ''}`}
+                                className={`btn btn-primary btn-sm sm:btn-md ${saving ? 'loading' : ''}`}
                                 disabled={saving}
                             >
                                 Add Skill
@@ -165,44 +167,51 @@ export default function SkillsPage() {
 
             {/* Skills List */}
             <div className="card bg-base-100 shadow-xl">
-                <div className="card-body">
-                    <h2 className="card-title mb-4">Your Skills</h2>
-                    <div className="overflow-x-auto">
-                        <table className="table">
+                <div className="card-body p-4 sm:p-6">
+                    <h2 className="text-lg sm:text-xl font-bold mb-4">Your Skills</h2>
+                    <div className="overflow-x-auto -mx-4 sm:mx-0">
+                        <table className="table table-sm sm:table-md">
                             <thead>
                                 <tr>
-                                    <th>Skill</th>
-                                    <th>Category</th>
-                                    <th>Proficiency</th>
-                                    <th>Actions</th>
+                                    <th className="text-sm sm:text-base">Skill</th>
+                                    <th className="text-sm sm:text-base">Category</th>
+                                    <th className="text-sm sm:text-base">Proficiency</th>
+                                    <th className="text-sm sm:text-base">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {skills.map((skill, index) => (
                                     <tr key={index}>
-                                        <td>{skill.name}</td>
-                                        <td>{skill.category}</td>
-                                        <td>
+                                        <td className="text-sm sm:text-base font-medium">{skill.name}</td>
+                                        <td className="text-sm sm:text-base">{skill.category}</td>
+                                        <td className="min-w-[150px] sm:min-w-[200px]">
                                             <div className="flex items-center gap-2">
-                                                <div className="w-full bg-base-300 rounded-full h-2">
+                                                <div className="w-full bg-base-300 rounded-full h-1.5 sm:h-2">
                                                     <div
-                                                        className="bg-primary h-2 rounded-full"
+                                                        className="bg-primary h-1.5 sm:h-2 rounded-full"
                                                         style={{ width: `${skill.proficiency}%` }}
                                                     />
                                                 </div>
-                                                <span className="text-sm">{skill.proficiency}%</span>
+                                                <span className="text-xs sm:text-sm whitespace-nowrap">{skill.proficiency}%</span>
                                             </div>
                                         </td>
                                         <td>
                                             <button
                                                 onClick={() => handleDeleteSkill(index)}
-                                                className="btn btn-ghost btn-sm text-error"
+                                                className="btn btn-ghost btn-xs sm:btn-sm text-error"
                                             >
                                                 Delete
                                             </button>
                                         </td>
                                     </tr>
                                 ))}
+                                {skills.length === 0 && (
+                                    <tr>
+                                        <td colSpan="4" className="text-center py-4 text-base-content/60">
+                                            No skills added yet. Add your first skill above!
+                                        </td>
+                                    </tr>
+                                )}
                             </tbody>
                         </table>
                     </div>

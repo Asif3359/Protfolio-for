@@ -140,40 +140,45 @@ export default function PersonalInfoPage() {
 
     if (loading) {
         return (
-            <div className="flex justify-center items-center min-h-screen">
+            <div className="flex justify-center items-center min-h-[calc(100vh-4rem)]">
                 <span className="loading loading-spinner loading-lg"></span>
             </div>
         );
     }
 
     return (
-        <div className="container mx-auto p-4">
+        <div className="w-full">
+            <div className="mb-6">
+                <h1 className="text-2xl sm:text-3xl font-bold mb-2">Personal Information</h1>
+                <p className="text-base-content/60">Manage your profile information and contact details.</p>
+            </div>
+
             <div className="card bg-base-100 shadow-xl">
-                <div className="card-body">
-                    <h2 className="card-title">Personal Information</h2>
-                    <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="card-body p-4 sm:p-6">
+                    <form onSubmit={handleSubmit} className="space-y-6">
                         {/* Profile Image Upload */}
                         <div className="form-control">
                             <label className="label">
-                                <span className="label-text">Profile Image</span>
+                                <span className="label-text font-medium">Profile Image</span>
                             </label>
-                            <div className="flex flex-col items-center gap-4">
+                            <div className="flex flex-col sm:flex-row items-center gap-4">
                                 {imagePreview ? (
                                     <div className="avatar">
-                                        <div className="w-24 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+                                        <div className="w-20 sm:w-24 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
                                             <Image
                                                 src={imagePreview}
                                                 alt="Profile preview"
                                                 width={96}
                                                 height={96}
-                                                className="rounded-full"
+                                                className="rounded-full object-cover"
+                                                priority
                                             />
                                         </div>
                                     </div>
                                 ) : (
                                     <div className="avatar placeholder">
-                                        <div className="bg-neutral text-neutral-content rounded-full w-24">
-                                            <span className="text-3xl">{formData.name?.charAt(0) || '?'}</span>
+                                        <div className="bg-neutral text-neutral-content rounded-full w-20 sm:w-24">
+                                            <span className="text-2xl sm:text-3xl">{formData.name?.charAt(0) || '?'}</span>
                                         </div>
                                     </div>
                                 )}
@@ -181,50 +186,52 @@ export default function PersonalInfoPage() {
                                     type="file"
                                     onChange={handleImageChange}
                                     accept="image/*"
-                                    className="file-input file-input-bordered w-full max-w-xs"
+                                    className="file-input file-input-bordered file-input-sm sm:file-input-md w-full max-w-xs"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                            <div className="form-control">
+                                <label className="label">
+                                    <span className="label-text font-medium">Full Name</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="name"
+                                    value={formData.name}
+                                    onChange={handleInputChange}
+                                    className="input input-bordered input-sm sm:input-md"
+                                    required
+                                />
+                            </div>
+
+                            <div className="form-control">
+                                <label className="label">
+                                    <span className="label-text font-medium">Role/Title</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="role"
+                                    value={formData.role}
+                                    onChange={handleInputChange}
+                                    className="input input-bordered input-sm sm:input-md"
+                                    required
+                                    placeholder="e.g., Full Stack Developer"
                                 />
                             </div>
                         </div>
 
                         <div className="form-control">
                             <label className="label">
-                                <span className="label-text">Full Name</span>
-                            </label>
-                            <input
-                                type="text"
-                                name="name"
-                                value={formData.name}
-                                onChange={handleInputChange}
-                                className="input input-bordered"
-                                required
-                            />
-                        </div>
-
-                        <div className="form-control">
-                            <label className="label">
-                                <span className="label-text">Role/Title</span>
-                            </label>
-                            <input
-                                type="text"
-                                name="role"
-                                value={formData.role}
-                                onChange={handleInputChange}
-                                className="input input-bordered"
-                                required
-                                placeholder="e.g., Full Stack Developer"
-                            />
-                        </div>
-
-                        <div className="form-control">
-                            <label className="label">
-                                <span className="label-text">About Yourself</span>
+                                <span className="label-text font-medium">About Yourself</span>
                                 <span className="label-text-alt text-xs opacity-50">Brief introduction about yourself</span>
                             </label>
                             <textarea
                                 name="aboutYourself"
                                 value={formData.aboutYourself}
                                 onChange={handleInputChange}
-                                className="textarea textarea-bordered h-24"
+                                className="textarea textarea-bordered min-h-[100px] text-sm sm:text-base"
                                 required
                                 placeholder="A passionate developer dedicated to crafting exceptional digital experiences through clean code and innovative solutions."
                             />
@@ -232,14 +239,14 @@ export default function PersonalInfoPage() {
 
                         <div className="form-control">
                             <label className="label">
-                                <span className="label-text">Background</span>
+                                <span className="label-text font-medium">Background</span>
                                 <span className="label-text-alt text-xs opacity-50">Your experience and journey</span>
                             </label>
                             <textarea
                                 name="background"
                                 value={formData.background}
                                 onChange={handleInputChange}
-                                className="textarea textarea-bordered h-24"
+                                className="textarea textarea-bordered min-h-[100px] text-sm sm:text-base"
                                 required
                                 placeholder="With over [X] years of experience in web development..."
                             />
@@ -247,65 +254,67 @@ export default function PersonalInfoPage() {
 
                         <div className="form-control">
                             <label className="label">
-                                <span className="label-text">Short Bio</span>
+                                <span className="label-text font-medium">Short Bio</span>
                                 <span className="label-text-alt text-xs opacity-50">Will be shown in hero section</span>
                             </label>
                             <textarea
                                 name="bio"
                                 value={formData.bio}
                                 onChange={handleInputChange}
-                                className="textarea textarea-bordered h-24"
+                                className="textarea textarea-bordered min-h-[100px] text-sm sm:text-base"
                                 required
                             />
                         </div>
 
-                        <div className="divider">Contact Information</div>
+                        <div className="divider my-8">Contact Information</div>
 
-                        <div className="form-control">
-                            <label className="label">
-                                <span className="label-text">Email</span>
-                            </label>
-                            <input
-                                type="email"
-                                name="contact.email"
-                                value={formData.contact.email}
-                                onChange={handleInputChange}
-                                className="input input-bordered"
-                                required
-                            />
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                            <div className="form-control">
+                                <label className="label">
+                                    <span className="label-text font-medium">Email</span>
+                                </label>
+                                <input
+                                    type="email"
+                                    name="contact.email"
+                                    value={formData.contact.email}
+                                    onChange={handleInputChange}
+                                    className="input input-bordered input-sm sm:input-md"
+                                    required
+                                />
+                            </div>
+
+                            <div className="form-control">
+                                <label className="label">
+                                    <span className="label-text font-medium">Phone</span>
+                                </label>
+                                <input
+                                    type="tel"
+                                    name="contact.phone"
+                                    value={formData.contact.phone}
+                                    onChange={handleInputChange}
+                                    className="input input-bordered input-sm sm:input-md"
+                                />
+                            </div>
+
+                            <div className="form-control">
+                                <label className="label">
+                                    <span className="label-text font-medium">Location</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="contact.location"
+                                    value={formData.contact.location}
+                                    onChange={handleInputChange}
+                                    className="input input-bordered input-sm sm:input-md"
+                                    placeholder="e.g., New York, USA"
+                                />
+                            </div>
                         </div>
 
-                        <div className="form-control">
-                            <label className="label">
-                                <span className="label-text">Phone</span>
-                            </label>
-                            <input
-                                type="tel"
-                                name="contact.phone"
-                                value={formData.contact.phone}
-                                onChange={handleInputChange}
-                                className="input input-bordered"
-                            />
-                        </div>
-
-                        <div className="form-control">
-                            <label className="label">
-                                <span className="label-text">Location</span>
-                            </label>
-                            <input
-                                type="text"
-                                name="contact.location"
-                                value={formData.contact.location}
-                                onChange={handleInputChange}
-                                className="input input-bordered"
-                                placeholder="e.g., New York, USA"
-                            />
-                        </div>
-
-                        <div className="card-actions justify-end">
+                        <div className="card-actions justify-end pt-4">
                             <button
                                 type="submit"
-                                className={`btn btn-primary ${saving ? 'loading' : ''}`}
+                                className={`btn btn-primary btn-sm sm:btn-md ${saving ? 'loading' : ''}`}
                                 disabled={saving}
                             >
                                 {saving ? 'Saving...' : 'Save Changes'}

@@ -47,8 +47,7 @@ export default async function AboutPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navigation />
-
+      <Navigation userData={user}></Navigation>
       <main className="pt-16">
         {/* Hero Section */}
         <section className="py-20 bg-base-200">

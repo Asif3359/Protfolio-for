@@ -15,17 +15,15 @@ const geistMono = localFont({
 });
 
 export const metadata = {
-    title: "Your Name - Web Developer",
-    description: "Portfolio website showcasing my web development projects and skills",
+  title: "Your Name - Web Developer",
+  description: "Portfolio website showcasing my web development projects and skills",
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <LayoutContent>
-          {children}
-        </LayoutContent>
+        {children}
       </body>
     </html>
   );

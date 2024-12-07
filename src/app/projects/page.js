@@ -4,11 +4,22 @@ import Link from "next/link";
 import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
 
+async function getData() {
+    try {
+        await connectDB();
+        const user = await User.findOne({});
+        return { user: JSON.parse(JSON.stringify(user)) };
+    } catch (error) {
+        console.error('Error fetching data:', error);
+        return { user: null };
+    }
+}
+
 async function getProjects() {
     try {
         await connectDB();
         const user = await User.findOne({});
-        
+
         if (!user) {
             throw new Error('No user data found');
         }
@@ -21,11 +32,12 @@ async function getProjects() {
 }
 
 export default async function ProjectsPage() {
+    const { user } = await getData();
     const projects = await getProjects();
 
     return (
         <div className="min-h-screen bg-background py-20">
-            <Navigation />
+            <Navigation userData={user}></Navigation>
             <div className="max-w-6xl mx-auto px-8 pt-5">
                 <div className="flex justify-between items-center mb-12">
                     <h1 className="text-3xl font-bold">All Projects</h1>
