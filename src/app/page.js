@@ -9,7 +9,7 @@ async function getData() {
     try {
         await connectDB();
         const users = await User.find({ isApproved: true }).lean();
-        
+
         // For the home page, we'll show the first approved user's data
         // Later you can add a feature to select which user's portfolio to view
         const user = users[0] || null;
@@ -112,18 +112,67 @@ export default async function Home() {
                             </p>
                         </div>
 
-                        {/* Right side - Code Animation */}
+                        {/* Right side - Image */}
                         <div className="relative h-[300px] flex items-center justify-center">
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="w-full h-full max-w-[300px] max-h-[300px] relative">
-                                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-lg filter blur-xl">
+                            <div className="w-full h-full max-w-[300px] max-h-[300px] relative overflow-hidden rounded-lg shadow-xl">
+                                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 mix-blend-overlay"></div>
+                                <img
+                                    src={user?.image || '/placeholder-profile.jpg'}
+                                    alt={user?.name || 'Profile'}
+                                    className="w-full h-full object-cover"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            {/* Projects Section */}
+            <section id="projects" className="py-20">
+                <div className="max-w-6xl mx-auto px-8">
+                    <h2 className="text-4xl font-bold mb-12 text-center border-b-2 border-primary pb-4">Featured Projects</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {user?.projects?.filter(project => project.featured)?.map((project) => (
+                            <div key={project._id} className="card bg-base-100 shadow-xl">
+                                <figure className="px-4 pt-4">
+                                    <img
+                                        src={project.image || '/placeholder-project.jpg'}
+                                        alt={project.title}
+                                        className="rounded-xl h-48 w-full object-cover"
+                                    />
+                                </figure>
+                                <div className="card-body">
+                                    <h3 className="card-title">{project.title}</h3>
+                                    <p className="text-sm opacity-70">{project.description}</p>
+                                    <div className="card-actions justify-end mt-4">
+                                        {project.demoUrl && (
+                                            <a
+                                                href={project.demoUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="btn btn-primary btn-sm"
+                                            >
+                                                Live Demo
+                                            </a>
+                                        )}
+                                        {project.githubUrl && (
+                                            <a
+                                                href={project.githubUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="btn btn-ghost btn-sm"
+                                            >
+                                                GitHub
+                                            </a>
+                                        )}
                                     </div>
                                 </div>
                             </div>
-                            <div className="relative">
-                                <CodeAnimation />
-                            </div>
-                        </div>
+                        ))}
+                    </div>
+                    <div className="text-center mt-12">
+                        <Link href="/projects" className="btn btn-primary">
+                            View All Projects
+                        </Link>
                     </div>
                 </div>
             </section>
