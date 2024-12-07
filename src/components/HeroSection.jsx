@@ -75,7 +75,7 @@ export default function HeroSection({ userData }) {
                             >
                                 {userData?.socialLinks?.github && (
                                     <a
-                                        href={userData.socialLinks.github}
+                                        href={userData?.socialLinks?.github}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="btn btn-outline btn-sm btn-primary hover:scale-105 transform transition"
@@ -88,7 +88,7 @@ export default function HeroSection({ userData }) {
                                 )}
                                 {userData?.socialLinks?.linkedin && (
                                     <a
-                                        href={userData.socialLinks.linkedin}
+                                        href={userData?.socialLinks?.linkedin}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="btn btn-outline btn-sm btn-primary hover:scale-105 transform transition"
@@ -99,9 +99,9 @@ export default function HeroSection({ userData }) {
                                         LinkedIn
                                     </a>
                                 )}
-                                {userData?.contact?.email && (
+                                {userData?.socialLinks?.facebook && (
                                     <a
-                                        href={userData.socialLinks.facebook}
+                                        href={userData?.socialLinks?.facebook}
                                         className="btn btn-outline btn-sm btn-primary hover:scale-105 transform transition"
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -112,7 +112,7 @@ export default function HeroSection({ userData }) {
                                 )}
                                 {userData?.contact?.email && (
                                     <a
-                                        href={`mailto:${userData.contact.email}`}
+                                        href={`mailto:${userData?.contact?.email}`}
                                         className="btn btn-sm btn-primary hover:scale-105 transform transition"
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">

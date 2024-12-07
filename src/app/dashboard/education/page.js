@@ -37,39 +37,46 @@ export default function EducationPage() {
 
     const handleAddEducation = async (e) => {
         e.preventDefault();
-        if (!newEducation.school || !newEducation.degree) return;
+        if (!newEducation.school || !newEducation.degree || !newEducation.field) {
+            alert('Please fill in all required fields');
+            return;
+        }
 
         setSaving(true);
         try {
-            const formattedEducation = {
+            const updatedEducation = [...education, {
                 ...newEducation,
                 startDate: new Date(newEducation.startDate),
-                endDate: new Date(newEducation.endDate),
-            };
+                endDate: new Date(newEducation.endDate)
+            }];
 
-            const updatedEducation = [...education, formattedEducation];
-            const response = await fetch('/api/user', {
-                method: 'POST',
+            const response = await fetch('/api/user/current', {
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ education: updatedEducation }),
             });
 
-            if (response.ok) {
-                setEducation(updatedEducation);
-                setNewEducation({
-                    school: '',
-                    degree: '',
-                    field: '',
-                    startDate: '',
-                    endDate: '',
-                    description: '',
-                });
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to add education');
             }
+
+            setEducation(updatedEducation);
+            setNewEducation({
+                school: '',
+                degree: '',
+                field: '',
+                startDate: '',
+                endDate: '',
+                description: ''
+            });
+            alert('Education added successfully!');
         } catch (error) {
             console.error('Failed to add education:', error);
-            alert('Failed to add education. Please try again.');
+            alert(error.message || 'Failed to add education. Please try again.');
         } finally {
             setSaving(false);
         }

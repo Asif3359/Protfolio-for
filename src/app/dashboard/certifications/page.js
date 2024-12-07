@@ -37,11 +37,11 @@ export default function CertificationsManagementPage() {
             setError(null);
             const response = await fetch('/api/certifications');
             const data = await response.json();
-            
+
             if (!response.ok) {
                 throw new Error(data.error || 'Failed to fetch certifications');
             }
-            
+
             setCertifications(data.certifications || []);
         } catch (error) {
             console.error('Error fetching certifications:', error);
@@ -163,6 +163,72 @@ export default function CertificationsManagementPage() {
             setError(error.message || 'Failed to save certification. Please try again.');
         } finally {
             setSaving(false);
+        }
+    };
+
+    const handleAddCertification = async (e) => {
+        e.preventDefault();
+        if (!newCertification.title || !newCertification.issuer || !newCertification.date) {
+            alert('Please fill in all required fields');
+            return;
+        }
+
+        setSaving(true);
+        try {
+            const updatedCertifications = [...certifications, newCertification];
+            const response = await fetch('/api/user/current', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ certifications: updatedCertifications }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to add certification');
+            }
+
+            setCertifications(updatedCertifications);
+            setNewCertification({
+                title: '',
+                issuer: '',
+                date: '',
+                image: '',
+                link: ''
+            });
+            alert('Certification added successfully!');
+        } catch (error) {
+            console.error('Failed to add certification:', error);
+            alert(error.message || 'Failed to add certification. Please try again.');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleDeleteCertification = async (index) => {
+        try {
+            const updatedCertifications = certifications.filter((_, i) => i !== index);
+            const response = await fetch('/api/user/current', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ certifications: updatedCertifications }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to delete certification');
+            }
+
+            setCertifications(updatedCertifications);
+            alert('Certification deleted successfully!');
+        } catch (error) {
+            console.error('Failed to delete certification:', error);
+            alert(error.message || 'Failed to delete certification. Please try again.');
         }
     };
 
@@ -289,17 +355,17 @@ export default function CertificationsManagementPage() {
                         </div>
 
                         <div className="flex flex-wrap gap-2 pt-4">
-                            <button 
-                                type="submit" 
+                            <button
+                                type="submit"
                                 className={`btn btn-primary flex-1 sm:flex-none ${saving ? 'loading' : ''}`}
                                 disabled={saving}
                             >
                                 {saving ? 'Saving...' : (editingId ? 'Update Certification' : 'Add Certification')}
                             </button>
                             {editingId && (
-                                <button 
-                                    type="button" 
-                                    onClick={resetForm} 
+                                <button
+                                    type="button"
+                                    onClick={resetForm}
                                     className="btn btn-ghost flex-1 sm:flex-none"
                                     disabled={saving}
                                 >
@@ -326,8 +392,8 @@ export default function CertificationsManagementPage() {
                                     <div className="flex flex-col sm:flex-row gap-4 w-full">
                                         {cert.image && (
                                             <div className="w-full sm:w-[200px] lg:w-[300px] h-[200px] flex-shrink-0">
-                                                <img 
-                                                    src={cert.image} 
+                                                <img
+                                                    src={cert.image}
                                                     alt={cert.title}
                                                     className="w-full h-full object-contain rounded-lg border"
                                                 />
@@ -338,7 +404,7 @@ export default function CertificationsManagementPage() {
                                             <p className="text-sm opacity-70 mb-1">{cert.issuer}</p>
                                             <p className="text-sm opacity-70 mb-2">{cert.date}</p>
                                             {cert.link && (
-                                                <a 
+                                                <a
                                                     href={cert.link}
                                                     target="_blank"
                                                     rel="noopener noreferrer"

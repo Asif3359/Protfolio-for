@@ -37,39 +37,46 @@ export default function ExperiencePage() {
 
     const handleAddExperience = async (e) => {
         e.preventDefault();
-        if (!newExperience.title || !newExperience.company) return;
+        if (!newExperience.title || !newExperience.company) {
+            alert('Please fill in all required fields');
+            return;
+        }
 
         setSaving(true);
         try {
-            const formattedExperience = {
+            const updatedExperience = [...experiences, {
                 ...newExperience,
                 startDate: new Date(newExperience.startDate),
-                endDate: newExperience.current ? null : new Date(newExperience.endDate),
-            };
+                endDate: newExperience.current ? null : new Date(newExperience.endDate)
+            }];
 
-            const updatedExperiences = [...experiences, formattedExperience];
-            const response = await fetch('/api/user', {
-                method: 'POST',
+            const response = await fetch('/api/user/current', {
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ experience: updatedExperiences }),
+                body: JSON.stringify({ experience: updatedExperience }),
             });
 
-            if (response.ok) {
-                setExperiences(updatedExperiences);
-                setNewExperience({
-                    title: '',
-                    company: '',
-                    startDate: '',
-                    endDate: '',
-                    description: '',
-                    current: false,
-                });
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to add experience');
             }
+
+            setExperiences(updatedExperience);
+            setNewExperience({
+                title: '',
+                company: '',
+                startDate: '',
+                endDate: '',
+                description: '',
+                current: false
+            });
+            alert('Experience added successfully!');
         } catch (error) {
             console.error('Failed to add experience:', error);
-            alert('Failed to add experience. Please try again.');
+            alert(error.message || 'Failed to add experience. Please try again.');
         } finally {
             setSaving(false);
         }

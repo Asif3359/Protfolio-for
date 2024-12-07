@@ -1,132 +1,191 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
+import { getAuth } from 'firebase-admin/auth';
+import { adminApp } from '@/lib/firebase-admin';
 
-// GET handler to fetch user data
-export async function GET() {
+const auth = getAuth(adminApp);
+
+// Helper function to sanitize MongoDB document
+function sanitizeUser(user) {
+    if (!user) return null;
+
+    const sanitized = {
+        ...user.toObject(),
+        _id: user._id.toString(),
+        createdAt: user.createdAt?.toISOString(),
+        updatedAt: user.updatedAt?.toISOString(),
+    };
+
+    // Handle nested arrays with dates and ObjectIds
+    if (sanitized.experience) {
+        sanitized.experience = sanitized.experience.map(exp => ({
+            ...exp,
+            _id: exp._id.toString(),
+            startDate: exp.startDate?.toISOString(),
+            endDate: exp.endDate?.toISOString()
+        }));
+    }
+
+    if (sanitized.education) {
+        sanitized.education = sanitized.education.map(edu => ({
+            ...edu,
+            _id: edu._id.toString(),
+            startDate: edu.startDate?.toISOString(),
+            endDate: edu.endDate?.toISOString()
+        }));
+    }
+
+    if (sanitized.blogPosts) {
+        sanitized.blogPosts = sanitized.blogPosts.map(post => ({
+            ...post,
+            _id: post._id.toString(),
+            date: post.date?.toISOString()
+        }));
+    }
+
+    if (sanitized.projects) {
+        sanitized.projects = sanitized.projects.map(proj => ({
+            ...proj,
+            _id: proj._id.toString()
+        }));
+    }
+
+    if (sanitized.skills) {
+        sanitized.skills = sanitized.skills.map(skill => ({
+            ...skill,
+            _id: skill._id.toString()
+        }));
+    }
+
+    if (sanitized.certifications) {
+        sanitized.certifications = sanitized.certifications.map(cert => ({
+            ...cert,
+            _id: cert._id.toString()
+        }));
+    }
+
+    return sanitized;
+}
+
+// Get current user's data
+export async function GET(request) {
     try {
+        // Get the session cookie
+        const sessionCookie = request.cookies.get('__session')?.value;
+
+        if (!sessionCookie) {
+            return NextResponse.json(
+                { error: 'Not authenticated' },
+                { status: 401 }
+            );
+        }
+
+        // Verify the session cookie
+        const decodedClaims = await auth.verifySessionCookie(sessionCookie, true);
+        
         await connectDB();
-        const user = await User.findOne({});
+
+        // Get user data
+        const user = await User.findOne({ firebaseUid: decodedClaims.uid });
 
         if (!user) {
             return NextResponse.json(
-                { error: 'No user found' },
+                { error: 'User not found' },
                 { status: 404 }
             );
         }
 
-        return NextResponse.json({ user });
+        return NextResponse.json({ user: sanitizeUser(user) });
     } catch (error) {
-        console.error('Error fetching user:', error);
+        console.error('Error getting user data:', error);
         return NextResponse.json(
-            { error: 'Failed to fetch user data' },
+            { error: 'Internal server error' },
             { status: 500 }
         );
     }
 }
 
-// PUT handler to update user data
+// Update current user's data
 export async function PUT(request) {
     try {
-        await connectDB();
+        // Get the session cookie
+        const sessionCookie = request.cookies.get('__session')?.value;
+
+        if (!sessionCookie) {
+            return NextResponse.json(
+                { error: 'Not authenticated' },
+                { status: 401 }
+            );
+        }
+
+        // Verify the session cookie
+        const decodedClaims = await auth.verifySessionCookie(sessionCookie, true);
+        
         const { update } = await request.json();
+        await connectDB();
 
-        // Find the user
-        const user = await User.findOne({});
-        if (!user) {
-            return NextResponse.json(
-                { error: 'No user found' },
-                { status: 404 }
-            );
-        }
-
-        // If we're only updating social links, skip other validations
-        if (update.socialLinks && Object.keys(update).length === 1) {
-            const updatedUser = await User.findByIdAndUpdate(
-                user._id,
-                { 
-                    $set: { 
-                        socialLinks: {
-                            github: update.socialLinks.github || '',
-                            linkedin: update.socialLinks.linkedin || '',
-                            facebook: update.socialLinks.facebook || '',
-                            twitter: update.socialLinks.twitter || '',
-                            website: update.socialLinks.website || ''
-                        } 
-                    } 
-                },
-                { new: true }
-            );
-            return NextResponse.json({ user: updatedUser });
-        }
-
-        // For other updates, validate required fields
-        const requiredFields = ['name', 'role', 'bio', 'aboutYourself', 'background'];
-        for (const field of requiredFields) {
-            if (!update[field]) {
-                return NextResponse.json(
-                    { error: `${field} is required` },
-                    { status: 400 }
-                );
-            }
-        }
-
-        // Validate contact email
-        if (!update.contact?.email) {
-            return NextResponse.json(
-                { error: 'Email is required' },
-                { status: 400 }
-            );
-        }
-
-        // Update existing user with all fields
-        const updatedUser = await User.findByIdAndUpdate(
-            user._id,
-            {
-                $set: {
-                    name: update.name,
-                    role: update.role,
-                    bio: update.bio,
-                    aboutYourself: update.aboutYourself,
-                    background: update.background,
-                    image: update.image,
-                    contact: {
-                        email: update.contact.email,
-                        phone: update.contact.phone || '',
-                        location: update.contact.location || ''
-                    }
-                }
-            },
+        // Find and update user
+        const updatedUser = await User.findOneAndUpdate(
+            { firebaseUid: decodedClaims.uid },
+            { $set: update },
             { new: true, runValidators: true }
         );
 
-        return NextResponse.json({ user: updatedUser });
+        if (!updatedUser) {
+            return NextResponse.json(
+                { error: 'User not found' },
+                { status: 404 }
+            );
+        }
+
+        return NextResponse.json({ user: sanitizeUser(updatedUser) });
     } catch (error) {
         console.error('Error updating user:', error);
         return NextResponse.json(
-            { error: 'Failed to update user data' },
+            { error: 'Failed to update user' },
             { status: 500 }
         );
     }
 }
 
-// POST create user data (if needed)
-export async function POST(request) {
+// Delete current user's data
+export async function DELETE(request) {
     try {
-        await connectDB();
-        const data = await request.json();
+        // Get the session cookie
+        const sessionCookie = request.cookies.get('__session')?.value;
 
-        let user = await User.findOne({});
-        if (!user) {
-            user = await User.create(data);
-        } else {
-            Object.assign(user, data);
-            await user.save();
+        if (!sessionCookie) {
+            return NextResponse.json(
+                { error: 'Not authenticated' },
+                { status: 401 }
+            );
         }
 
-        return NextResponse.json({ user });
+        // Verify the session cookie
+        const decodedClaims = await auth.verifySessionCookie(sessionCookie, true);
+        
+        await connectDB();
+
+        // Delete user
+        const deletedUser = await User.findOneAndDelete({ firebaseUid: decodedClaims.uid });
+
+        if (!deletedUser) {
+            return NextResponse.json(
+                { error: 'User not found' },
+                { status: 404 }
+            );
+        }
+
+        return NextResponse.json({ 
+            message: 'User deleted successfully',
+            user: sanitizeUser(deletedUser)
+        });
     } catch (error) {
-        console.error('Error creating/updating user:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        console.error('Error deleting user:', error);
+        return NextResponse.json(
+            { error: 'Failed to delete user' },
+            { status: 500 }
+        );
     }
 }

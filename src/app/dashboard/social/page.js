@@ -65,34 +65,23 @@ export default function SocialLinksPage() {
         setSaving(true);
 
         try {
-            // Prepare the data with properly formatted URLs
-            const socialLinksData = {
-                github: formData.github ? `https://github.com/${formData.github.trim()}` : '',
-                linkedin: formData.linkedin ? `https://linkedin.com/in/${formData.linkedin.trim()}` : '',
-                facebook: formData.facebook ? `https://facebook.com/${formData.facebook.trim()}` : '',
-                website: formData.website?.trim() || ''
-            };
-
-            const response = await fetch('/api/user', {
+            const response = await fetch('/api/user/current', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    update: {
-                        socialLinks: socialLinksData
-                    }
-                }),
+                body: JSON.stringify({ socialLinks: formData }),
             });
 
+            const data = await response.json();
+
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Failed to update social links');
+                throw new Error(data.error || 'Failed to update social links');
             }
 
             alert('Social links updated successfully!');
         } catch (error) {
-            console.error('Error updating social links:', error);
+            console.error('Failed to update social links:', error);
             alert(error.message || 'Failed to update social links. Please try again.');
         } finally {
             setSaving(false);

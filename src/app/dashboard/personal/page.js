@@ -32,7 +32,7 @@ export default function PersonalInfoPage() {
             if (data.user) {
                 setFormData({
                     name: data.user.name || '',
-                    role: data.user.role || '',
+                    jobTitle: data.user.jobTitle || '',
                     bio: data.user.bio || '',
                     aboutYourself: data.user.aboutYourself || '',
                     background: data.user.background || '',
@@ -208,12 +208,12 @@ export default function PersonalInfoPage() {
 
                             <div className="form-control">
                                 <label className="label">
-                                    <span className="label-text font-medium">Role/Title</span>
+                                    <span className="label-text font-medium">Jobe Title</span>
                                 </label>
                                 <input
                                     type="text"
-                                    name="role"
-                                    value={formData.role}
+                                    name="jobTitle"
+                                    value={formData.jobTitle}
                                     onChange={handleInputChange}
                                     className="input input-bordered input-sm sm:input-md"
                                     required

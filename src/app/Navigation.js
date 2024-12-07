@@ -61,13 +61,6 @@ export default function Navigation({ userData }) {
                                         </Link>
                                     </li>
                                 ))}
-                                {!user && (
-                                    <li>
-                                        <Link href="/auth/login" className="text-primary">
-                                            Login
-                                        </Link>
-                                    </li>
-                                )}
                             </ul>
                         </div>
                         <Link href="/" className="btn btn-ghost normal-case text-xl">{userData?.name || 'Your Name'}</Link>
@@ -101,4 +94,4 @@ export default function Navigation({ userData }) {
             </div>
         </div>
     );
-}
+} 

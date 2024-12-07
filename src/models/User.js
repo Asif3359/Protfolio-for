@@ -1,16 +1,72 @@
 import mongoose from 'mongoose';
 
+// Blog post schema
+const BlogPostSchema = new mongoose.Schema({
+    title: {
+        type: String,
+        required: true
+    },
+    slug: {
+        type: String,
+        required: true
+    },
+    content: {
+        type: String,
+        required: true
+    },
+    excerpt: {
+        type: String,
+        required: true
+    },
+    date: {
+        type: Date,
+        default: Date.now
+    },
+    tags: [String],
+    published: {
+        type: Boolean,
+        default: true
+    }
+});
+
 const UserSchema = new mongoose.Schema({
+    // Authentication fields
+    email: {
+        type: String,
+        required: [true, 'Email is required'],
+        unique: true,
+    },
+    firebaseUid: {
+        type: String,
+        required: [true, 'Firebase UID is required'],
+        unique: true,
+    },
+    role: {
+        type: String,
+        enum: ['admin', 'user'],
+        default: 'user',
+    },
+    isApproved: {
+        type: Boolean,
+        default: false,
+    },
+    approvalRequest: {
+        type: Boolean,
+        default: false,
+    },
+
+    // Profile fields
     name: {
         type: String,
         required: [true, 'Name is required'],
     },
+    jobTitle: {
+        type: String,
+        required: [true, 'Job title is required'],
+        default: 'Software Engineer'
+    },
     image: {
         type: String,
-    },
-    role: {
-        type: String,
-        required: [true, 'Role is required'],
     },
     bio: {
         type: String,
@@ -57,34 +113,7 @@ const UserSchema = new mongoose.Schema({
             default: false
         },
     }],
-    blogPosts: [{
-        title: {
-            type: String,
-            required: true
-        },
-        slug: {
-            type: String,
-            required: true,
-            unique: true
-        },
-        content: {
-            type: String,
-            required: true
-        },
-        excerpt: {
-            type: String,
-            required: true
-        },
-        date: {
-            type: Date,
-            default: Date.now
-        },
-        tags: [String],
-        published: {
-            type: Boolean,
-            default: true
-        }
-    }],
+    blogPosts: [BlogPostSchema],
     socialLinks: {
         github: String,
         linkedin: String,
@@ -125,6 +154,9 @@ const UserSchema = new mongoose.Schema({
 }, {
     timestamps: true,
 });
+
+// Create compound index for unique slugs per user
+UserSchema.index({ 'blogPosts.slug': 1, firebaseUid: 1 }, { unique: true, sparse: true });
 
 const User = mongoose.models.User || mongoose.model('User', UserSchema);
 export default User; 

@@ -1,30 +1,71 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
+import { getAuth } from 'firebase-admin/auth';
+import { adminApp } from '@/lib/firebase-admin';
 
-// GET all projects
-export async function GET() {
+const auth = getAuth(adminApp);
+
+// Helper function to sanitize projects
+function sanitizeProjects(projects) {
+    return projects.map(project => ({
+        ...project,
+        _id: project._id.toString()
+    }));
+}
+
+// Get current user's projects
+export async function GET(request) {
     try {
+        // Get the session cookie
+        const sessionCookie = request.cookies.get('__session')?.value;
+
+        if (!sessionCookie) {
+            return NextResponse.json(
+                { error: 'Not authenticated' },
+                { status: 401 }
+            );
+        }
+
+        // Verify the session cookie
+        const decodedClaims = await auth.verifySessionCookie(sessionCookie, true);
+        
         await connectDB();
-        const user = await User.findOne({});
+        const user = await User.findOne({ firebaseUid: decodedClaims.uid });
         
         if (!user) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
 
-        return NextResponse.json({ projects: user.projects }, { status: 200 });
+        return NextResponse.json({ 
+            projects: sanitizeProjects(user.projects || [])
+        }, { status: 200 });
     } catch (error) {
+        console.error('Error getting projects:', error);
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
 
-// POST new project
+// Add new project for current user
 export async function POST(request) {
     try {
+        // Get the session cookie
+        const sessionCookie = request.cookies.get('__session')?.value;
+
+        if (!sessionCookie) {
+            return NextResponse.json(
+                { error: 'Not authenticated' },
+                { status: 401 }
+            );
+        }
+
+        // Verify the session cookie
+        const decodedClaims = await auth.verifySessionCookie(sessionCookie, true);
+        
         const body = await request.json();
         await connectDB();
         
-        const user = await User.findOne({});
+        const user = await User.findOne({ firebaseUid: decodedClaims.uid });
         if (!user) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
@@ -36,20 +77,41 @@ export async function POST(request) {
         user.projects.push(body);
         await user.save();
 
-        return NextResponse.json({ message: 'Project added successfully', project: body }, { status: 201 });
+        const newProject = user.projects[user.projects.length - 1];
+        return NextResponse.json({ 
+            message: 'Project added successfully', 
+            project: {
+                ...newProject.toObject(),
+                _id: newProject._id.toString()
+            }
+        }, { status: 201 });
     } catch (error) {
+        console.error('Error adding project:', error);
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
 
-// PUT update project
+// Update project for current user
 export async function PUT(request) {
     try {
+        // Get the session cookie
+        const sessionCookie = request.cookies.get('__session')?.value;
+
+        if (!sessionCookie) {
+            return NextResponse.json(
+                { error: 'Not authenticated' },
+                { status: 401 }
+            );
+        }
+
+        // Verify the session cookie
+        const decodedClaims = await auth.verifySessionCookie(sessionCookie, true);
+        
         const body = await request.json();
         const { projectId, ...updateData } = body;
         
         await connectDB();
-        const user = await User.findOne({});
+        const user = await User.findOne({ firebaseUid: decodedClaims.uid });
         
         if (!user) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
@@ -70,21 +132,38 @@ export async function PUT(request) {
 
         return NextResponse.json({ 
             message: 'Project updated successfully', 
-            project: user.projects[projectIndex] 
+            project: {
+                ...user.projects[projectIndex].toObject(),
+                _id: user.projects[projectIndex]._id.toString()
+            }
         }, { status: 200 });
     } catch (error) {
+        console.error('Error updating project:', error);
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
 
-// DELETE project
+// Delete project for current user
 export async function DELETE(request) {
     try {
+        // Get the session cookie
+        const sessionCookie = request.cookies.get('__session')?.value;
+
+        if (!sessionCookie) {
+            return NextResponse.json(
+                { error: 'Not authenticated' },
+                { status: 401 }
+            );
+        }
+
+        // Verify the session cookie
+        const decodedClaims = await auth.verifySessionCookie(sessionCookie, true);
+        
         const { searchParams } = new URL(request.url);
         const projectId = searchParams.get('id');
         
         await connectDB();
-        const user = await User.findOne({});
+        const user = await User.findOne({ firebaseUid: decodedClaims.uid });
         
         if (!user) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
@@ -95,11 +174,19 @@ export async function DELETE(request) {
             return NextResponse.json({ error: 'Project not found' }, { status: 404 });
         }
 
+        const deletedProject = user.projects[projectIndex];
         user.projects.splice(projectIndex, 1);
         await user.save();
 
-        return NextResponse.json({ message: 'Project deleted successfully' }, { status: 200 });
+        return NextResponse.json({ 
+            message: 'Project deleted successfully',
+            project: {
+                ...deletedProject.toObject(),
+                _id: deletedProject._id.toString()
+            }
+        }, { status: 200 });
     } catch (error) {
+        console.error('Error deleting project:', error);
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 } 

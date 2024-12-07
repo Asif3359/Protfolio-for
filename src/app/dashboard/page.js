@@ -148,7 +148,7 @@ export default function DashboardPage() {
                             </div>
                             <div className="text-center">
                                 <h3 className="text-xl font-bold">{userData?.name || 'Your Name'}</h3>
-                                <p className="text-base-content/70">{userData?.role || 'Your Role'}</p>
+                                <p className="text-base-content/70">{userData?.jobTitle || 'Your Role'}</p>
                                 <p className="text-sm text-base-content/60">{userData?.contact?.email || 'Your Email'}</p>
                             </div>
                             <div className="flex gap-2 justify-center">

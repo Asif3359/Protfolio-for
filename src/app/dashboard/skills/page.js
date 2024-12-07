@@ -11,7 +11,7 @@ export default function SkillsPage() {
     const [newSkill, setNewSkill] = useState({
         name: '',
         proficiency: 0,
-        category: 'Frontend'
+        category: ''
     });
 
     useEffect(() => {
@@ -34,30 +34,42 @@ export default function SkillsPage() {
 
     const handleAddSkill = async (e) => {
         e.preventDefault();
-        if (!newSkill.name || !newSkill.category) return;
+        if (!newSkill.name || !newSkill.category) {
+            alert('Please fill in all required fields');
+            return;
+        }
 
         setSaving(true);
         try {
-            const updatedSkills = [...skills, newSkill];
-            const response = await fetch('/api/user', {
-                method: 'POST',
+            const updatedSkills = [...skills, {
+                ...newSkill,
+                proficiency: Number(newSkill.proficiency) || 0
+            }];
+
+            const response = await fetch('/api/user/current', {
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ skills: updatedSkills }),
             });
 
-            if (response.ok) {
-                setSkills(updatedSkills);
-                setNewSkill({
-                    name: '',
-                    proficiency: 0,
-                    category: 'Frontend'
-                });
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to add skill');
             }
+
+            setSkills(updatedSkills);
+            setNewSkill({
+                name: '',
+                proficiency: 0,
+                category: ''
+            });
+            alert('Skill added successfully!');
         } catch (error) {
             console.error('Failed to add skill:', error);
-            alert('Failed to add skill. Please try again.');
+            alert(error.message || 'Failed to add skill. Please try again.');
         } finally {
             setSaving(false);
         }
@@ -66,20 +78,25 @@ export default function SkillsPage() {
     const handleDeleteSkill = async (index) => {
         try {
             const updatedSkills = skills.filter((_, i) => i !== index);
-            const response = await fetch('/api/user', {
-                method: 'POST',
+            const response = await fetch('/api/user/current', {
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ skills: updatedSkills }),
             });
 
-            if (response.ok) {
-                setSkills(updatedSkills);
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to delete skill');
             }
+
+            setSkills(updatedSkills);
+            alert('Skill deleted successfully!');
         } catch (error) {
             console.error('Failed to delete skill:', error);
-            alert('Failed to delete skill. Please try again.');
+            alert(error.message || 'Failed to delete skill. Please try again.');
         }
     };
 
@@ -122,18 +139,14 @@ export default function SkillsPage() {
                                 <label className="label">
                                     <span className="label-text font-medium">Category</span>
                                 </label>
-                                <select
+                                <input
+                                    type="text"
                                     value={newSkill.category}
                                     onChange={(e) => setNewSkill({ ...newSkill, category: e.target.value })}
-                                    className="select select-bordered select-sm sm:select-md"
+                                    className="input input-bordered input-sm sm:input-md"
                                     required
-                                >
-                                    <option value="Frontend">Frontend</option>
-                                    <option value="Backend">Backend</option>
-                                    <option value="Database">Database</option>
-                                    <option value="DevOps">DevOps</option>
-                                    <option value="Tools">Tools</option>
-                                </select>
+                                    placeholder="e.g., Frontend, Backend, Database"
+                                />
                             </div>
 
                             <div className="form-control">

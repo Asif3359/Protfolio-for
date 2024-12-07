@@ -2,8 +2,10 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { signOut } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 
 const sidebarItems = [
     { name: 'Overview', path: '/dashboard' },
@@ -19,8 +21,10 @@ const sidebarItems = [
 
 export default function DashboardLayout({ children }) {
     const pathname = usePathname();
+    const router = useRouter();
     const [userData, setUserData] = useState(null);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
 
     useEffect(() => {
         async function fetchUserData() {
@@ -41,6 +45,24 @@ export default function DashboardLayout({ children }) {
     useEffect(() => {
         setIsDrawerOpen(false);
     }, [pathname]);
+
+    const handleLogout = async () => {
+        try {
+            setIsLoggingOut(true);
+            await signOut(auth);
+            
+            // Clear the session cookie
+            await fetch('/api/auth/logout', {
+                method: 'POST',
+            });
+
+            router.push('/auth/login');
+        } catch (error) {
+            console.error('Error logging out:', error);
+        } finally {
+            setIsLoggingOut(false);
+        }
+    };
 
     return (
         <div className="min-h-screen bg-base-200">
@@ -92,7 +114,8 @@ export default function DashboardLayout({ children }) {
                         className="drawer-overlay"
                         onClick={() => setIsDrawerOpen(false)}
                     ></label>
-                    <div className="menu p-4 w-[280px] sm:w-80 min-h-full bg-base-100 text-base-content">
+                    <div className="menu p-4 w-[280px] sm:w-80 min-h-full bg-base-100 text-base-content flex flex-col">
+                        {/* Profile Section */}
                         <div className="mb-8">
                             <div className="px-2 py-4 space-y-4">
                                 <Link 
@@ -121,13 +144,15 @@ export default function DashboardLayout({ children }) {
                                     )}
                                     <div className="min-w-0">
                                         <h2 className="text-lg sm:text-xl font-bold truncate">{userData?.name || 'Your Name'}</h2>
-                                        <p className="text-sm sm:text-base text-base-content/60 truncate">{userData?.role || 'Your Role'}</p>
+                                        <p className="text-sm sm:text-base text-base-content/60 truncate">{userData?.jobTitle || 'Your Role'}</p>
                                     </div>
                                 </Link>
                                 <div className="divider my-2"></div>
                             </div>
                         </div>
-                        <ul className="space-y-1.5">
+
+                        {/* Navigation Links */}
+                        <ul className="space-y-1.5 flex-1">
                             {sidebarItems.map((item) => (
                                 <li key={item.path}>
                                     <Link
@@ -144,6 +169,17 @@ export default function DashboardLayout({ children }) {
                                 </li>
                             ))}
                         </ul>
+
+                        {/* Logout Button */}
+                        <div className="mt-auto pt-4 border-t border-base-300">
+                            <button
+                                onClick={handleLogout}
+                                disabled={isLoggingOut}
+                                className={`btn btn-outline btn-error w-full ${isLoggingOut ? 'loading' : ''}`}
+                            >
+                                {isLoggingOut ? 'Logging out...' : 'Log Out'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
